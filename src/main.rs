@@ -1,40 +1,30 @@
 extern crate iron;
-extern crate rustc_serialize;
-extern crate bodyparser;
-extern crate persistent;
+#[macro_use(router)]
+extern crate router;
 
-use persistent::Read;
-use rustc_serialize::json;
+mod routes;
+mod utils;
+
 use iron::prelude::*;
-use iron::status;
+use iron::BeforeMiddleware;
+// use router::Router;
+use utils::rsm::RouteSpecificMiddleware;
 
-#[derive(RustcDecodable, RustcEncodable)]
-pub struct Pack  {
-    id: String,
-    loc: Vec<i8>,
+struct AuthMiddleware;
+
+impl BeforeMiddleware for AuthMiddleware {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        println!("IM IN YR MIDDLEWARE, {}", req.url);
+        Ok(())
+    }
 }
 
 fn main() {
-    fn hello_world(req: &mut Request) -> IronResult<Response> {
-        let body = req.get::<bodyparser::Raw>();
+    let router = router!(
+        post "/track/add" => RouteSpecificMiddleware::new(routes::track::add, vec![AuthMiddleware]),
+        post "/auth/login" => routes::auth::login);
 
-        match body {
-            Ok(Some(b)) => println!("Da bodey is:\n{}", b),
-            Ok(None) => println!("No hay nada"),
-            Err(err) => println!("Fuckup: {}", err)
-        }
+    Iron::new(router).http("0.0.0.0:3000").unwrap();
 
-        let body = req.get::<bodyparser::Raw>();
-
-        match body {
-            Ok(Some(b)) => println!("Da bodey is:\n{}", b),
-            Ok(None) => println!("No hay nada"),
-            Err(err) => println!("Fuckup: {}", err)
-        }
-
-        Ok(Response::with(status::Ok))
-    }
-
-    Iron::new(hello_world).http("0.0.0.0:3000").unwrap();
-    println!("On 3000");
+    println!("Running ");
 }
