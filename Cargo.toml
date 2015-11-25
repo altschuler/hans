@@ -1,0 +1,10 @@
+[package]
+name = "hans"
+version = "0.1.0"
+authors = ["Simon Altschuler <simon@altschuler.dk>"]
+
+[dependencies]
+iron = "*"
+rustc-serialize = "0.3.16"
+bodyparser = "0.0.6"
+persistent = "0.0.8"
