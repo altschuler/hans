@@ -1,20 +1,42 @@
-extern crate iron;
-extern crate rustc_serialize;
 extern crate bodyparser;
-extern crate persistent;
 
-// use self::persistent::Read;
-// use self::rustc_serialize::json;
+// use persistent::Read;
+use rustc_serialize::json;
 use iron::prelude::*;
 use iron::status;
 
-pub struct Tracking {
-    id: String,
-    lat: Vec<i8>,
-    long: Vec<i8>,
-}
+use routes::data::*;
 
 pub fn add(req: &mut Request) -> IronResult<Response> {
+    let body = req.get::<bodyparser::Struct<Packet<Tracking>>>();
 
-    Ok(Response::with(status::Ok))
+    match body {
+        Ok(Some(packet)) => match packet.data {
+            Some(data) => println!("Hej: {:?},{:?}", data.lat, data.lng),
+            None => println!("Fuckup: no data")
+        },
+        Ok(None) => println!("No hay nada"),
+        Err(err) => println!("Fuckup: {}", err)
+    }
+
+    let t = Tracking {
+        id: "Wat".to_string(),
+        lat: 309.0,
+        lng: 514.9
+    };
+
+    let a = Auth {
+        id: "Wat".to_string(),
+        token: "watwat".to_string()
+    };
+
+    let p = Packet::<Tracking> {
+        auth: a,
+        kind: PacketType::Tracking,
+        data: Some(t)
+    };
+
+    let res = json::encode(&p).unwrap();
+
+    Ok(Response::with((status::Ok, res)))
 }
