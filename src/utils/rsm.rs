@@ -1,18 +1,22 @@
 extern crate iron;
 
-use iron::{Handler, IronResult, BeforeMiddleware, Request, Response, Chain};
+use iron::{Handler, IronResult, BeforeMiddleware, AfterMiddleware, Request, Response, Chain};
 
 pub struct RouteSpecificMiddleware {
     chain: Chain,
 }
 
 impl RouteSpecificMiddleware {
-    pub fn new<H: Handler, M: BeforeMiddleware>(handler: H, m: Vec<M>) -> Self {
+    pub fn new<H: Handler, B: BeforeMiddleware, A: AfterMiddleware>(handler: H, b: Vec<B>, a: Vec<A>) -> Self {
 
         let mut chain = Chain::new(handler);
 
-        for item in m.into_iter() {
+        for item in b.into_iter() {
             chain.link_before(item);
+        }
+
+        for item in a.into_iter() {
+            chain.link_after(item);
         }
 
         RouteSpecificMiddleware {

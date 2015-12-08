@@ -1,38 +1,40 @@
 extern crate bodyparser;
 
 use iron::prelude::*;
-use iron::status;
 use iron::BeforeMiddleware;
 
-use routes::data::*;
-use errors::*;
+use core::data::*;
+use core::error::*;
 
 pub struct AuthMiddleware;
 
 impl BeforeMiddleware for AuthMiddleware {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        println!("auth middleware");
-        let body = req.get::<bodyparser::Struct<Packet<Empty>>>();
-        // let bodyj = req.get::<bodyparser::Json>();
+        // println!("auth middleware");
 
+        let body = req.get::<bodyparser::Struct<Packet<Empty>>>();
+
+        // let bodyj = req.get::<bodyparser::Json>();
         // match bodyj.unwrap() {
         //     Some(b) => println!("{}", b),
         //     _ => println!("nah")
         // }
-        println!("logging in");
+
         match body {
-            Ok(Some(packet)) => authenticate(packet.auth.id),
-            _ => Err(IronError::new(NoRoute, status::NotFound))
-            //_ => Err(IronError::new(StringError("parsing failed".to_string()), status::BadRequest))
+            Ok(Some(packet)) => match packet.auth {
+                Some(a) => authenticate(a.id, a.token),
+                _ => fail_with(ErrorType::AuthMissing)
+            },
+            _ => fail_with(ErrorType::ParseFail)
         }
     }
 }
 
-pub fn authenticate(id: String) -> IronResult<()> {
-    println!("authenticating");
+pub fn authenticate(id: String, token: String) -> IronResult<()> {
+    println!("authenticating id: '{}' token: '{}'", id, token);
+
     match id.as_ref() {
         "foo" => Ok(()),
-        _ => Err(IronError::new(NoRoute, status::NotFound))
-        //_ => Err(IronError::new(StringError("auth failed".to_string()), status::BadRequest))
+        _ => fail_with(ErrorType::AuthMissing),
     }
 }

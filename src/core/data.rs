@@ -15,6 +15,12 @@ pub struct Tracking {
 }
 
 #[derive(Debug, Clone, RustcDecodable, RustcEncodable)]
+pub struct TokenRequest {
+    pub id: String,
+    pub pwd: String
+}
+
+#[derive(Debug, Clone, RustcDecodable, RustcEncodable)]
 pub struct Auth {
     pub id: String,
     pub token: String
@@ -22,7 +28,7 @@ pub struct Auth {
 
 #[derive(Debug, Clone, RustcDecodable, RustcEncodable)]
 pub struct Packet<T> {
-    pub auth: Auth,
+    pub auth: Option<Auth>,
     pub kind: PacketType,
     pub data: Option<T>
 }

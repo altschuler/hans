@@ -6,20 +6,25 @@ extern crate iron;
 extern crate router;
 
 mod routes;
+mod core;
 mod utils;
 mod middleware;
-mod errors;
 
 use iron::prelude::*;
+
+use core::error::ErrorHandler;
 use utils::rsm::RouteSpecificMiddleware;
 use middleware::auth::AuthMiddleware;
 
 fn main() {
+    println!("Running...");
+
     let router = router!(
-        post "/track/add" => RouteSpecificMiddleware::new(routes::track::add, vec![AuthMiddleware]),
-        post "/auth/login" => RouteSpecificMiddleware::new(routes::auth::login, vec![AuthMiddleware]));
+        // track
+        post "/track/add" => RouteSpecificMiddleware::new(routes::track::add, vec![AuthMiddleware], vec![ErrorHandler]),
 
-    Iron::new(router).http("0.0.0.0:3000").unwrap();
+        // auth
+        post "/auth/login" => RouteSpecificMiddleware::new(routes::auth::login, vec![AuthMiddleware], vec![ErrorHandler]));
 
-    println!("Running ");
+    Iron::new(router).http("localhost:3000").unwrap();
 }

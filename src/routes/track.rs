@@ -5,7 +5,8 @@ use rustc_serialize::json;
 use iron::prelude::*;
 use iron::status;
 
-use routes::data::*;
+use core::data::*;
+use core::error::*;
 
 pub fn add(req: &mut Request) -> IronResult<Response> {
     let body = req.get::<bodyparser::Struct<Packet<Tracking>>>();
@@ -31,7 +32,7 @@ pub fn add(req: &mut Request) -> IronResult<Response> {
     };
 
     let p = Packet::<Tracking> {
-        auth: a,
+        auth: Some(a),
         kind: PacketType::Tracking,
         data: Some(t)
     };
